@@ -1,3 +1,8 @@
+import curses
+from curses import wrapper
+
+# ------------------------------------------------------------------------------
+# Auxiliary class to be used within the Trie
 class Node:
 	def __init__(self):
 		self.value = []
@@ -6,6 +11,8 @@ class Node:
 		self.mid = None
 		self.right = None
 	
+# ------------------------------------------------------------------------------
+# Class that controls the creation and basic Trie API
 class Trie:
 	def __init__(self):
 		self.root = None
@@ -51,6 +58,9 @@ class Trie:
 		else:
 			return node
 
+# ------------------------------------------------------------------------------
+# Dictionary to map letters to numbers, in order to create the Trie using the
+# combinations of numbers as key, and the words as values
 map_letters_to_numbers = {
   'a': '2',
   'b': '2',
@@ -81,10 +91,10 @@ map_letters_to_numbers = {
   '-': '0'
 }
 
-dictionary_mapped = {}
-
+# Trie where the dictionary is stored
 words_trie = Trie()
 
+# Use the default English dictionary included in all *nix distributions
 with open('/usr/share/dict/words', 'r') as dictionary:
 	for line in dictionary:
 		word = line.strip()
@@ -96,4 +106,44 @@ with open('/usr/share/dict/words', 'r') as dictionary:
 		
 		words_trie.put(key, word)
 
-print('The word is: {:}'.format(words_trie.get('43556')))
+# Just a couple of examples:
+# hello -> 43556
+# fore  -> 3673
+
+# ------------------------------------------------------------------------------
+# Using curses to control the display on the screen
+stdscr = curses.initscr()
+
+# Function to be used later with `wrapper` so that this helper function takes
+# care of all the initialization, exceptions and clean up of the screen setup
+def t9_interface(stdscr):
+	curses.cbreak()
+	stdscr.clear()
+
+	input_text = ''
+	matches = []
+	while True:
+		stdscr.addstr(0, 0, 'Type the numbers and the words should be appearing underneath...')
+		stdscr.addstr(1, 0, 'It accepts only [0-9], or [q] to exit')
+		stdscr.addstr(2, 0, '>> ' + input_text)
+		stdscr.addstr(3, 0, 'Matches:')
+		if len(matches) > 0:
+			stdscr.addstr(4, 0, ' '.join(matches[0:min(len(matches), 5)]))
+
+		c = stdscr.getch()
+		if c == ord('q'):
+			if len(input_text) == 0:
+				break
+		if c >= ord('0') and c <= ord('9'):
+			input_text = input_text + chr(c)
+		else:
+			if c == curses.KEY_DC and len(input_text) > 0:
+				input_text = input_text[0:-1]
+		if len(input_text) > 0:
+			matches = words_trie.get(input_text)
+		else:
+			matches = []
+		stdscr.clear()
+
+# Actual call to the interface that will show the results to the user input
+curses.wrapper(t9_interface)
