@@ -124,11 +124,11 @@ def t9_interface(stdscr):
 	matches = []
 	while True:
 		stdscr.addstr(0, 0, 'Type the numbers and the words should be appearing underneath...')
-		stdscr.addstr(1, 0, 'It accepts only [0-9], or [q] to exit')
+		stdscr.addstr(1, 0, 'It accepts only [0-9], or [q] to exit. Use DEL to delete a number')
 		stdscr.addstr(2, 0, '>> ' + input_text)
 		stdscr.addstr(3, 0, 'Matches:')
 		if len(matches) > 0:
-			stdscr.addstr(4, 0, ' '.join(matches[0:min(len(matches), 5)]))
+			stdscr.addstr(4, 0, ' '.join(matches[0:min(len(matches), 10)]))
 
 		c = stdscr.getch()
 		if c == ord('q'):
@@ -141,6 +141,8 @@ def t9_interface(stdscr):
 				input_text = input_text[0:-1]
 		if len(input_text) > 0:
 			matches = words_trie.get(input_text)
+			if matches == None:
+				matches = [] 
 		else:
 			matches = []
 		stdscr.clear()
