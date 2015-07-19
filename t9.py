@@ -11,11 +11,40 @@ class Node:
 		self.mid = None
 		self.right = None
 	
+	def __str__(self):
+		string = self.char + '[' + ' '.join(self.value) + '], ' 
+		if self.left != None:
+			string = string + self.left.char
+		string = string + ', '
+		if self.mid != None:
+			string = string + self.mid.char
+		string = string + ', '
+		if self.right != None:
+			string = string + self.right.char
+		string = string + '\n'
+		return string
+		
+	
 # ------------------------------------------------------------------------------
 # Class that controls the creation and basic Trie API
 class Trie:
 	def __init__(self):
 		self.root = None
+
+	def __str__(self):
+		return self.print_node(self.root, '')
+
+	def print_node(self, node, string):
+		if node == None:
+			return string
+		string = string + str(node)
+		if node.left != None:
+			string = self.print_node(node.left, string)
+		if node.mid != None:
+			string = self.print_node(node.mid, string)
+		if node.right != None:
+			string = self.print_node(node.right, string)
+		return string
 
 	def put(self, key, value):
 		self.root = self.put_inner(self.root, key, value, 0)
@@ -58,6 +87,33 @@ class Trie:
 		else:
 			return node
 
+	def get_subtrie(self, key, N):
+		node = self.get_inner(self.root, key, 0)
+		if node == None:
+			return None
+		else:
+			# copy the contents to avoid modifying the value of the node
+			children = list(node.value)
+			if node.mid != None:
+				children = self.get_children(node.mid, N, children) 
+			return children
+
+	def get_children(self, node, N, children):
+		children.extend(node.value)
+		if len(children) >= N:
+			return children
+		if node.left != None:
+			children = self.get_children(node.left, N, children)
+			if len(children) >= N:
+				return children
+		if node.mid != None:
+			children = self.get_children(node.mid, N, children)
+			if len(children) >= N:
+				return children
+		if node.right != None:
+			children = self.get_children(node.right, N, children)
+		return children
+
 # ------------------------------------------------------------------------------
 # Dictionary to map letters to numbers, in order to create the Trie using the
 # combinations of numbers as key, and the words as values
@@ -96,6 +152,7 @@ words_trie = Trie()
 
 # Use the default English dictionary included in all *nix distributions
 with open('/usr/share/dict/words', 'r') as dictionary:
+# with open('./words', 'r') as dictionary:
 	for line in dictionary:
 		word = line.strip()
 
@@ -103,7 +160,7 @@ with open('/usr/share/dict/words', 'r') as dictionary:
 		for char in word.lower():
 			key_list.append(map_letters_to_numbers[char])
 		key = ''.join(key_list)
-		
+
 		words_trie.put(key, word)
 
 # Just a couple of examples:
@@ -131,6 +188,7 @@ def t9_interface(stdscr):
 			stdscr.addstr(4, 0, ' '.join(matches[0:min(len(matches), 10)]))
 
 		c = stdscr.getch()
+		stdscr.clear()
 		if c == ord('q'):
 			if len(input_text) == 0:
 				break
@@ -140,12 +198,11 @@ def t9_interface(stdscr):
 			if c == curses.KEY_DC and len(input_text) > 0:
 				input_text = input_text[0:-1]
 		if len(input_text) > 0:
-			matches = words_trie.get(input_text)
+			matches = words_trie.get_subtrie(input_text, 10)
 			if matches == None:
 				matches = [] 
 		else:
 			matches = []
-		stdscr.clear()
 
 # Actual call to the interface that will show the results to the user input
 curses.wrapper(t9_interface)
