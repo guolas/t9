@@ -119,32 +119,50 @@ class Trie:
 # combinations of numbers as key, and the words as values
 map_letters_to_numbers = {
   'a': '2',
+  'á': '2',
+  'ä': '2',
+  'â': '2',
+  'å': '2',
   'b': '2',
   'c': '2',
+  'ç': '2',
   'd': '3',
   'e': '3',
+  'é': '3',
+  'è': '3',
+  'ê': '3',
   'f': '3',
   'g': '4',
   'h': '4',
   'i': '4',
+  'í': '4',
   'j': '5',
   'k': '5',
   'l': '5',
   'm': '6',
   'n': '6',
+  'ñ': '6',
   'o': '6',
+  'ó': '6',
+  'ö': '6',
+  'ô': '6',
   'p': '7',
   'q': '7',
   'r': '7',
   's': '7',
   't': '8',
   'u': '8',
+  'ú': '8',
+  'ü': '8',
+  'û': '8',
   'v': '8',
   'w': '9',
   'x': '9',
   'y': '9',
   'z': '9',
-  '-': '0'
+  '-': '0',
+  "'": '0',
+  '&': '0'
 }
 
 # Trie where the dictionary is stored
@@ -153,15 +171,16 @@ words_trie = Trie()
 # Use the default English dictionary included in all *nix distributions
 with open('/usr/share/dict/words', 'r') as dictionary:
 # with open('./words', 'r') as dictionary:
-	for line in dictionary:
-		word = line.strip()
+  for line in dictionary:
+    word = line.strip()
 
-		key_list = []
-		for char in word.lower():
-			key_list.append(map_letters_to_numbers[char])
-		key = ''.join(key_list)
+    key_list = []
+    for char in word.lower():
+      if not (char in ',.!?%'):
+        key_list.append(map_letters_to_numbers[char])
+    key = ''.join(key_list)
 
-		words_trie.put(key, word)
+    words_trie.put(key, word)
 
 # Just a couple of examples:
 # hello -> 43556
